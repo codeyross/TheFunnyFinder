@@ -1,0 +1,23 @@
+<link
+      rel="stylesheet"
+      href="/css/style.css"
+    />
+<body>
+  <h1>Venues</h1>
+  <table class="venuePG">
+<ul>
+  {{#each Venues}}
+  <tr><td class="venuePG"><li class="formform" {{this.id}}></li>
+  <li class="formform"> {{this.name}} </li> 
+  <li class="formform">{{this.location}}</li>
+   <li class="formform"><a href ="{{this.url}}">To Venue Site</a></li> 
+   <li class="formform"><img id="imgFit" class="venuePG"src="{{this.img}}"> </li> 
+   <li class="formform">{{this.details}} </li>
+  </td></tr>
+  {{/each}}
+</ul>
+</table>
+  <div class="home"><a href="/">Home</a></div> 
+</body>
+</html>
+

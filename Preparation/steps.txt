@@ -1,0 +1,207 @@
+Installs
+- npm init -y
+-Install express, handlebars, mongoose and nodemon with:
+npm i express mongoose hbs nodemon
+-Create the base files in the project root with:
+touch index.js .gitignore
+-Scaffold out the folder structure for our app:
+mkdir db models views controllers
+-The db folder will be where we configure our database connection. The models, views and controllers
+folders will map the the 3 parts of the MVC: models, views and controllers
+-ADD node_modules to the .gitignore
+-Check dependecies in package.json file to make sure mongoose is installed
+-Create a connection.js file in the db/ directory
+-Add the following code to the connection.js file:
+// db/connection.js
+// Require mongoose
+const mongoose = require('mongoose');
+//Store the URI for our database in a variable. (When we're working locally, we'll have a local DB, but in production, we'll have to have a database thats connected to the internet)
+const mongoURI =
+  process.env.NODE_ENV === 'production'
+    ? process.env.DB_URL
+    : 'mongodb://localhost/express-mvc';
+// Use the mongoose connect method to connect to the database.
+// The connect method takes 2 arguments: the address of the database and an object containing any options.
+mongoose
+  .connect(mongoURI, {
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+  })
+  // The connect method is asynchronous, so we can use
+  // .then/.catch to run callback functions when the connection is opened or errors out.
+    .then((instance) =>
+    console.log(`Connected to db: ${instance.connections[0].name}`)
+  )
+  .catch((error) => console.log('Connection failed!', error));
+
+// Export mongoose so we can use it elsewhere
+module.exports = mongoose;
+// const mongoose = require('mongoose') - To use Mongoose, we require its corresponding node module and save it in a variable we can reference later.
+
+mongoose.connect - To link Mongoose to our express-mvc Mongo database, we'll use the mongoose.connect() method and pass it the address of the database.
+
+module.exports = mongoose - When connection.js file is required in other files, it will evaluate to this connected version of mongoose.
+
+DEFINING A MONGOOSE SCHEMA AND models
+- Create a new file in models directory called comedy-model.js
+- Create a schema and model for our users:
+// models/todo-model.js
+
+const mongoose = require('../db/connection');
+
+const ComedySchema = new mongoose.Schema(
+  {
+    user: {
+      name: String,
+      required: true,
+    },
+    notes: {
+      type: String,
+    },
+  },
+  { timestamps: true }
+);
+// Make sure to name the model with the singular Todo!
+// Mongoose pluralizes and lowercases the name of the model
+// to name the collection of documents in the database that
+// correspond to this model.
+const Todo = mongoose.model('Todo', ToDoSchema);
+
+module.exports = Todo;
+
+SEED THE DATABASE 
+- Create a new comedy-seeds.json file in the db
+- Add the data
+
+SET UP A SEED FILE 
+- Create a new comedy-seeds.js file in the db
+- Add the following code:
+// Require the model which has a connection to the database
+const Todo = require('../models/todo-model');
+// Require a json file which contains some dummy data
+const seedData = require('./todo-seeds.json');
+
+// Remove any preexisting data
+Comedy.deleteMany({})
+  .then(() => {
+    // Insert the dummy data and return it
+    // so we can log it in the next .then
+    return Comedy.insertMany(seedData);
+  })
+  // If the insert was successful, we'll see the
+  // results in the terminal
+  .then(console.log)
+  // Log the error if the insert didn't work
+  .catch(console.error)
+  // Whether it was successful or not, we need to 
+  // exit the database.
+  .finally(() => {
+    // Close the connection to Mongo
+    process.exit();
+  });
+  //const Todo = require('../models/todo-model') - Bring in our model that defines the structure for our data and provides a connection to the database.
+//Todo.remove({}) - This clears out the entire todo collection. The empty query (curly braces) works the same as when passed to .find({}) matching every document in the database collection.
+//Todo.collection.insert(seedData) - Create a collection using the JSON contained in our seed file. Note that this is ideal for bulk insertion but skips schema validation. In our controller, where we will want validation, we will use Todo.create().
+
+RUNNING THE SEED FILE
+- Make sure you're in the comdedy directory
+- Run node ./db/comedy-seeds.js in the terminal
+- We'll see the results in the terminal, but we can also run mongo comdey in the terminal
+and then use find to see the data in the collection via the MongoDB REPL:
+> db.comdedys.find()
+-RESTful Routes
+
+BUILD A SERVER
+-Build a server in index.js
+// Require express
+const express = require('express');
+// Use express to instantiate our app
+const app = express();
+
+/* START ROUTE CONTROLLERS */
+// Require our Comedy model
+const Comedy = require('./models/comedy-model.js');
+
+/* END ROUTE CONTROLLERS */
+
+// Create a variable for our port
+const port = process.env.PORT || 4000;
+
+// Run our server!
+app.listen(port, () => {
+  console.log(`Express MVC app is running on port ${port}`);
+});
+
+INDEX ROUTE
+- Now that we have a basic server running, lets create an index route that displays all the users stored in the database
+- In index.js add a controller for the index route
+app.get('/comedys', (req, res) => {
+  Comedy.find({})
+    .then((comedys) => {
+      res.render('comedys/index', { comdedys });
+    })
+    .catch(console.error);
+});
+Comedy.find({}) - Retrieves all users in the database since we are not passing in any parameters to the method.
+
+.then(function(comedys){ ... }) - comdedys represents the all the users pulled from the database. We can then reference this inside of .then.
+
+res.render('comdedys/index', { comedys }); - A little confusing, we're rendering our index view and passing in our todos from the database
+
+The above controller action fetches all users from the database and renders them to an index view. We don't have an index view yet! Create a new file in the views directory called layout.hbs with the base html for our app:
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--Adding Bootstrap so we can make it pretty-->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+      integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z"
+      crossorigin="anonymous"
+    />
+    <title>Express MVC App</title>
+  </head>
+
+  <body class="container">
+    {{{body}}}
+  </body>
+</html>
+
+- Now create a comedys folder inside the views directory. Inside the comdedys folder,
+create a file called index.hbs This is where we'll create the template for our homepage view with all of our comedy items
+
+-We'll use the each helper in handlebars to iterate over the array of users in the object we've passed to the
+render method and output a list item for each user object it contains.  Make it look nice
+use the bootstrap list-group and list-group-item classes
+<!-- views/todos/index.hbs -->
+<h1>Users</h1>
+<ul class="list-group">
+  {{#each todos}}
+  <li class="list-group-item d-flex justify-content-between">
+    <div>{{this.title}}</div>
+    <div class="links">
+      <!-- for actions later -->
+    </div>
+  </li>
+  {{/each}}
+</ul>
+At this point our page will almost be ready to render our components. However, we need to set Handlebars as our view engine by adding one more line to our index.js below the instantiation of our Express app:
+
+// index.js
+// Require express
+const express = require('express');
+// Use express to instantiate our app
+const app = express();
+// Set Handlebars (hbs) as the view engine of our app
+app.set('view engine', 'hbs');
+Now, if we reload the page, we should see a list containing three todos. We'll be coming back to these shortly.
+
+MONGODB CONNECTION String
+mongodb+srv://rosssy999:R0ss1zzl!@cluster0.5xbpv.mongodb.net/myFirstDatabase?retryWrites=true&w=majority
+
+Create and style Pages for Create - Delete - Confirmation of Delete with search bar to search for more 
+- Show venues that match the search

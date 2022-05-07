@@ -1,0 +1,16 @@
+[
+    {
+        "name": "Greenwich Village Comedy Club",
+        "img": "https://media.tacdn.com/media/attractions-splice-spp-674x446/07/f4/5f/c3.jpg" ,
+        "location":"99 MacDougal St, New York, NY 10012" ,
+        "url": "https://greenwichvillagecomedyclub.com/open-mic",
+        "details": ["Tuesday 5pm-630pm", "$5 for 5 minutes", "Sign up at the door"]
+        },
+        {
+        "name": "The Lantern",
+        "img": "https://pbs.twimg.com/profile_banners/4750305041/1455566667/1500x500",
+        "location":"167 Bleeker St, New York, NY 10012" ,
+        "url": "https://waysandmeansnyc.com/events/",
+        "details": ["Monday 6pm", "Buy 1 item ($7) for 5 minutes", "Sign in person", "Line up is lottery-style"]
+        }
+]
